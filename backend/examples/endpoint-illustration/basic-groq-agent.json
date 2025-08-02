@@ -1,0 +1,29 @@
+{
+	"id": "basic-groq-agent",
+	"name": "Basic Groq Agent",
+	"description": "A basic agent for testing Groq functionality",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "ping",
+				"config": {}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "YOUR_GROQ_API_KEY_HERE",
+				"model_name": "llama-3.3-70b-versatile",
+				"temperature": 0.3,
+				"max_output_tokens": 2048
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/basic-groq",
+				"authentication_required": false
+			}
+		}
+	}
+}

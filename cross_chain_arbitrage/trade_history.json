@@ -1,0 +1,26 @@
+[
+  {
+    "timestamp": "2025-07-28T14:11:01.816596",
+    "trade_id": "ARB_1753692058_e6b2c152",
+    "from_chain": "solana",
+    "to_chain": "ethereum",
+    "amount": 100.0,
+    "profit": 35.75,
+    "gas_cost": 5.0,
+    "status": "completed_demo",
+    "hash_from": "demo_hash_ARB_1753692058_e6b2c152",
+    "hash_to": "demo_hash_ARB_1753692058_e6b2c152"
+  },
+  {
+    "timestamp": "2025-07-28T14:11:03.827197",
+    "trade_id": "ARB_1753692061_e6b2c152",
+    "from_chain": "ethereum",
+    "to_chain": "solana",
+    "amount": 0.5,
+    "profit": 22.4,
+    "gas_cost": 5.0,
+    "status": "completed_demo",
+    "hash_from": "demo_hash_ARB_1753692061_e6b2c152",
+    "hash_to": "demo_hash_ARB_1753692061_e6b2c152"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "max_trade_amount": 1000.0,
+  "max_daily_volume": 5000.0,
+  "min_profit_threshold": 10.0,
+  "max_slippage": 0.02,
+  "daily_trades_executed": 0,
+  "daily_volume_executed": 0.0,
+  "last_reset_date": ""
+}

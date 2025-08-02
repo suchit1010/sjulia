@@ -1,0 +1,29 @@
+{
+	"id": "gemini-arbitrage-agent",
+	"name": "Gemini AI Arbitrage Agent",
+	"description": "Cross-chain arbitrage agent powered by Google's Gemini AI for real-time opportunity detection",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "ping",
+				"config": {}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "AIzaSyArNyMbSMis3LWzSXVORhpiWW3dJAgbiAg",
+				"model_name": "models/gemini-2.0-flash-exp",
+				"temperature": 0.3,
+				"max_output_tokens": 2048
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/gemini-arbitrage",
+				"authentication_required": false
+			}
+		}
+	}
+}

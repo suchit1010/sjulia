@@ -1,0 +1,9 @@
+{
+  "demo_mode": true,
+  "solana_wallet": "DEMO_WALLET_ADDRESS",
+  "ethereum_wallet": "0xDEMO_WALLET_ADDRESS",
+  "solana_rpc": "https://api.mainnet-beta.solana.com",
+  "ethereum_rpc": "https://mainnet.infura.io/v3/demo",
+  "max_trade_amount": 100.0,
+  "min_profit_threshold": 2.0
+}

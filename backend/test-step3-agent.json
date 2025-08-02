@@ -1,0 +1,61 @@
+{
+	"id": "groq-arbitrage-step3",
+	"name": "Groq Arbitrage Agent Step 3",
+	"description": "Testing with groq_agent, price_fetcher, trade_executor, and bridge_handler tools",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "groq_agent",
+				"config": {
+					"api_key": "YOUR_GROQ_API_KEY_HERE",
+					"model_name": "llama-3.3-70b-versatile",
+					"temperature": 0.3,
+					"max_tokens": 4096
+				}
+			},
+			{
+				"name": "price_fetcher",
+				"config": {
+					"timeout": 30,
+					"max_retries": 3,
+					"user_agent": "JuliaOS-ArbitrageBot/1.0"
+				}
+			},
+			{
+				"name": "trade_executor",
+				"config": {
+					"max_slippage": 0.05,
+					"max_trade_amount": 1000.0,
+					"simulation_mode": true,
+					"gas_limit": 300000,
+					"gas_price_gwei": 20
+				}
+			},
+			{
+				"name": "bridge_handler",
+				"config": {
+					"max_bridge_amount": 1000.0,
+					"default_timeout": 3600,
+					"simulation_mode": true,
+					"supported_protocols": ["wormhole", "layerzero", "stargate"]
+				}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "AIzaSyArNyMbSMis3LWzSXVORhpiWW3dJAgbiAg",
+				"model_name": "models/gemini-2.5-pro",
+				"temperature": 0.4,
+				"max_output_tokens": 2048
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/arbitrage-step3",
+				"authentication_required": false
+			}
+		}
+	}
+}

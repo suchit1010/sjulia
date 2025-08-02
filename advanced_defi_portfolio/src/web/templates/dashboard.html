@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced DeFi Portfolio Manager - Ultimate DApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-online { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-error { color: #ef4444; }
+        
+        .crypto-ticker {
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+        .crypto-ticker-content {
+            display: inline-block;
+            animation: scroll 30s linear infinite;
+        }
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <i class="fas fa-chart-line text-2xl"></i>
+                    <h1 class="text-xl font-bold">Advanced DeFi Portfolio Manager</h1>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="/agents" class="hover:text-gray-300">
+                        <i class="fas fa-robot mr-2"></i>AI Agents
+                    </a>
+                    <a href="/trading" class="hover:text-gray-300">
+                        <i class="fas fa-exchange-alt mr-2"></i>Trading
+                    </a>
+                    <a href="/portfolio" class="hover:text-gray-300">
+                        <i class="fas fa-wallet mr-2"></i>Portfolio
+                    </a>
+                    <a href="/strategies" class="hover:text-gray-300">
+                        <i class="fas fa-brain mr-2"></i>AI Strategies
+                    </a>
+                    <a href="/governance" class="hover:text-gray-300">
+                        <i class="fas fa-vote-yea mr-2"></i>Governance
+                    </a>
+                    <a href="/gaming" class="hover:text-gray-300">
+                        <i class="fas fa-gamepad mr-2"></i>Gaming
+                    </a>
+                    <a href="/compliance" class="hover:text-gray-300">
+                        <i class="fas fa-shield-alt mr-2"></i>Compliance
+                    </a>
+                    <div class="flex items-center">
+                        <div class="pulse-dot w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                        <span class="text-sm">Live</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Crypto Ticker -->
+    <div class="bg-black text-green-400 py-2 crypto-ticker">
+        <div class="crypto-ticker-content" id="cryptoTicker">
+            Loading market data...
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Portfolio Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Portfolio Value</p>
+                        <p class="text-2xl font-bold text-gray-900" id="totalValue">$0</p>
+                        <p class="text-sm" id="dailyPnl">+0.00%</p>
+                    </div>
+                    <div class="text-blue-500">
+                        <i class="fas fa-wallet text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Annual APY</p>
+                        <p class="text-2xl font-bold text-green-600" id="apy">0.0%</p>
+                        <p class="text-sm text-gray-500">Weighted Average</p>
+                    </div>
+                    <div class="text-green-500">
+                        <i class="fas fa-percentage text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Active Agents</p>
+                        <p class="text-2xl font-bold text-purple-600" id="activeAgents">7</p>
+                        <p class="text-sm text-green-500">All Online</p>
+                    </div>
+                    <div class="text-purple-500">
+                        <i class="fas fa-robot text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">24h Profit</p>
+                        <p class="text-2xl font-bold text-green-600" id="dailyProfit">$0</p>
+                        <p class="text-sm text-gray-500">From All Strategies</p>
+                    </div>
+                    <div class="text-green-500">
+                        <i class="fas fa-chart-line text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Status Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- AI Agents Status -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-robot mr-2 text-purple-500"></i>AI Agents Status
+                </h3>
+                <div id="agentsStatus" class="space-y-3">
+                    <!-- Agents will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Live Activities -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-activity mr-2 text-blue-500"></i>Live Agent Activities
+                </h3>
+                <div id="liveActivities" class="space-y-2 max-h-64 overflow-y-auto">
+                    <!-- Activities will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Opportunities -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Arbitrage Opportunities -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-exchange-alt mr-2 text-orange-500"></i>Arbitrage Opportunities
+                </h3>
+                <div id="arbitrageOpps" class="space-y-3">
+                    <!-- Opportunities will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Market Making -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-chart-bar mr-2 text-blue-500"></i>Market Making
+                </h3>
+                <div id="marketMaking" class="space-y-3">
+                    <!-- Market making data will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Staking Rewards -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold mb-4">
+                    <i class="fas fa-coins mr-2 text-yellow-500"></i>Staking Rewards
+                </h3>
+                <div id="stakingRewards" class="space-y-3">
+                    <!-- Staking data will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Performance Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-4">
+                <i class="fas fa-chart-area mr-2 text-green-500"></i>Portfolio Performance
+            </h3>
+            <div class="relative h-64">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold mb-4">
+                <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <button onclick="executeStrategy('arbitrage')" 
+                        class="bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-exchange-alt mr-2"></i>Run Arbitrage
+                </button>
+                <button onclick="executeStrategy('market_making')" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-chart-bar mr-2"></i>Start MM
+                </button>
+                <button onclick="executeStrategy('staking')" 
+                        class="bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-coins mr-2"></i>Optimize Staking
+                </button>
+                <button onclick="executeStrategy('rebalance')" 
+                        class="bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-balance-scale mr-2"></i>Rebalance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WebSocket Status -->
+    <div id="wsStatus" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <i class="fas fa-wifi mr-2"></i>Connected
+    </div>
+
+    <script>
+        // WebSocket connection
+        const socket = io();
+        let portfolioChart;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadInitialData();
+            setupChart();
+            setupWebSocketEvents();
+        });
+
+        function initializeApp() {
+            console.log('🚀 Advanced DeFi Portfolio Manager DApp Loaded');
+            updateCryptoTicker();
+            setInterval(updateCryptoTicker, 10000); // Update ticker every 10 seconds
+        }
+
+        function loadInitialData() {
+            // Load portfolio status
+            fetch('/api/portfolio/status')
+                .then(response => response.json())
+                .then(data => updatePortfolioData(data))
+                .catch(error => console.error('Error loading portfolio data:', error));
+
+            // Load agents status
+            fetch('/api/agents/status')
+                .then(response => response.json())
+                .then(data => updateAgentsStatus(data))
+                .catch(error => console.error('Error loading agents data:', error));
+
+            // Load trading opportunities
+            fetch('/api/trading/opportunities')
+                .then(response => response.json())
+                .then(data => updateTradingOpportunities(data))
+                .catch(error => console.error('Error loading trading data:', error));
+        }
+
+        function updatePortfolioData(data) {
+            document.getElementById('totalValue').textContent = `$${data.total_value.toLocaleString()}`;
+            document.getElementById('apy').textContent = `${data.apy.toFixed(1)}%`;
+            
+            const pnlElement = document.getElementById('dailyPnl');
+            const pnlPercent = (data.daily_pnl / data.total_value * 100);
+            pnlElement.textContent = `${pnlPercent >= 0 ? '+' : ''}${pnlPercent.toFixed(2)}%`;
+            pnlElement.className = pnlPercent >= 0 ? 'text-sm text-green-500' : 'text-sm text-red-500';
+            
+            document.getElementById('dailyProfit').textContent = `$${Math.abs(data.daily_pnl).toLocaleString()}`;
+        }
+
+        function updateAgentsStatus(data) {
+            const container = document.getElementById('agentsStatus');
+            container.innerHTML = data.agents.map(agent => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-green-400 rounded-full mr-3 pulse-dot"></div>
+                        <div>
+                            <p class="font-medium text-gray-900">${agent.name}</p>
+                            <p class="text-sm text-gray-600">${agent.last_action}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-green-600">${agent.performance}</p>
+                        <p class="text-xs text-gray-500">${agent.status}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTradingOpportunities(data) {
+            // Update arbitrage opportunities
+            const arbContainer = document.getElementById('arbitrageOpps');
+            arbContainer.innerHTML = data.arbitrage.map(opp => `
+                <div class="p-3 bg-orange-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">${opp.pair}</span>
+                        <span class="text-green-600 font-bold">${opp.profit}</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        ${opp.dex1} → ${opp.dex2} (${opp.chain})
+                    </div>
+                </div>
+            `).join('');
+
+            // Update market making
+            const mmContainer = document.getElementById('marketMaking');
+            mmContainer.innerHTML = data.market_making.map(pool => `
+                <div class="p-3 bg-blue-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">${pool.pool}</span>
+                        <span class="text-blue-600 font-bold">${pool.apy}</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        TVL: ${pool.tvl} | 24h Fees: ${pool.fees_24h}
+                    </div>
+                </div>
+            `).join('');
+
+            // Update staking
+            const stakingContainer = document.getElementById('stakingRewards');
+            stakingContainer.innerHTML = data.staking.map(stake => `
+                <div class="p-3 bg-yellow-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">${stake.asset}</span>
+                        <span class="text-yellow-600 font-bold">${stake.apy}</span>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        ${stake.protocol} | Rewards: ${stake.rewards}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setupChart() {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            portfolioChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: [],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            // Load performance data
+            fetch('/api/analytics/performance')
+                .then(response => response.json())
+                .then(data => {
+                    portfolioChart.data.labels = data.timeline.map(point => point.date);
+                    portfolioChart.data.datasets[0].data = data.timeline.map(point => point.value);
+                    portfolioChart.update();
+                });
+        }
+
+        function setupWebSocketEvents() {
+            socket.on('connect', function() {
+                console.log('Connected to DeFi DApp');
+                document.getElementById('wsStatus').innerHTML = '<i class="fas fa-wifi mr-2"></i>Connected';
+                document.getElementById('wsStatus').className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg';
+            });
+
+            socket.on('disconnect', function() {
+                document.getElementById('wsStatus').innerHTML = '<i class="fas fa-wifi-slash mr-2"></i>Disconnected';
+                document.getElementById('wsStatus').className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg';
+            });
+
+            socket.on('portfolio_update', function(data) {
+                updatePortfolioData(data);
+            });
+
+            socket.on('new_activity', function(activity) {
+                addNewActivity(activity);
+            });
+
+            socket.on('strategy_executed', function(result) {
+                showNotification(`Strategy executed: ${result.strategy}`, 'success');
+            });
+        }
+
+        function addNewActivity(activity) {
+            const container = document.getElementById('liveActivities');
+            const activityElement = document.createElement('div');
+            activityElement.className = 'p-2 bg-blue-50 rounded text-sm border-l-4 border-blue-500';
+            activityElement.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="font-medium">${activity.agent}</span>
+                    <span class="text-green-600">${activity.impact}</span>
+                </div>
+                <div class="text-gray-600">${activity.action}</div>
+                <div class="text-xs text-gray-500">${new Date(activity.timestamp).toLocaleTimeString()}</div>
+            `;
+            
+            container.insertBefore(activityElement, container.firstChild);
+            
+            // Keep only last 10 activities
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function updateCryptoTicker() {
+            const ticker = document.getElementById('cryptoTicker');
+            const cryptoData = [
+                'BTC: $65,432 (+2.1%)',
+                'ETH: $3,245 (+1.8%)',
+                'SOL: $158 (+3.2%)',
+                'USDC: $1.00 (0.0%)',
+                'AVAX: $42 (+2.7%)',
+                'MATIC: $0.85 (+1.5%)',
+                'UNI: $12.3 (+0.9%)',
+                'AAVE: $125 (+2.3%)'
+            ];
+            ticker.textContent = cryptoData.join(' | ');
+        }
+
+        function executeStrategy(strategy) {
+            const data = { strategy: strategy, amount: 1000 };
+            
+            fetch(`/api/execute/${strategy}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                showNotification(`${strategy} strategy executed successfully!`, 'success');
+                console.log('Strategy result:', result);
+            })
+            .catch(error => {
+                showNotification(`Failed to execute ${strategy} strategy`, 'error');
+                console.error('Error:', error);
+            });
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } text-white`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

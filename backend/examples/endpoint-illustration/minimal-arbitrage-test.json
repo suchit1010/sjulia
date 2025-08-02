@@ -1,0 +1,29 @@
+{
+	"id": "minimal-arbitrage-test",
+	"name": "Minimal Arbitrage Test Agent",
+	"description": "Simple test agent to check arbitrage system functionality",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "ping",
+				"config": {}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "YOUR_GROQ_API_KEY_HERE",
+				"model_name": "llama-3.3-70b-versatile",
+				"temperature": 0.3,
+				"max_tokens": 4096
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/minimal-arbitrage-test",
+				"authentication_required": false
+			}
+		}
+	}
+}

@@ -1,0 +1,32 @@
+{
+    "id": "simple-test-agent",
+    "name": "Simple Test Agent",
+    "description": "A minimal test agent",
+    "blueprint": {
+        "tools": [
+            {
+                "name": "ping",
+                "config": {
+                    "timeout": 5000,
+                    "max_retries": 3
+                }
+            }
+        ],
+        "strategy": {
+            "name": "plan_execute",
+            "config": {
+                "api_key": "test-key",
+                "model_name": "test-model",
+                "temperature": 0.4,
+                "max_output_tokens": 1024
+            }
+        },
+        "trigger": {
+            "type": "webhook",
+            "params": {
+                "endpoint": "/simple-test",
+                "authentication_required": false
+            }
+        }
+    }
+}

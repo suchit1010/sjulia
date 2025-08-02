@@ -1,0 +1,79 @@
+{
+	"id": "groq-arbitrage-complete-v2",
+	"name": "Groq Cross-Chain Arbitrage Agent V2",
+	"description": "Complete AI-powered arbitrage agent with all tools including scraping and ping",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "groq_agent",
+				"config": {
+					"api_key": "YOUR_GROQ_API_KEY_HERE",
+					"model_name": "llama-3.3-70b-versatile",
+					"temperature": 0.3,
+					"max_tokens": 4096,
+					"top_p": 0.9,
+					"frequency_penalty": 0.1,
+					"presence_penalty": 0.1
+				}
+			},
+			{
+				"name": "price_fetcher",
+				"config": {
+					"timeout": 30,
+					"max_retries": 3,
+					"user_agent": "JuliaOS-ArbitrageBot/1.0"
+				}
+			},
+			{
+				"name": "trade_executor",
+				"config": {
+					"max_slippage": 0.05,
+					"max_trade_amount": 1000.0,
+					"simulation_mode": true,
+					"gas_limit": 300000,
+					"gas_price_gwei": 20
+				}
+			},
+			{
+				"name": "bridge_handler",
+				"config": {
+					"max_bridge_amount": 1000.0,
+					"default_timeout": 3600,
+					"simulation_mode": true,
+					"supported_protocols": ["wormhole", "layerzero", "stargate"]
+				}
+			},
+			{
+				"name": "scrape_article_text",
+				"config": {
+					"max_content_length": 10000,
+					"timeout": 30,
+					"user_agent": "JuliaOS-ArbitrageBot/1.0"
+				}
+			},
+			{
+				"name": "ping",
+				"config": {
+					"timeout": 5000,
+					"max_retries": 3
+				}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "AIzaSyArNyMbSMis3LWzSXVORhpiWW3dJAgbiAg",
+				"model_name": "models/gemini-2.5-pro",
+				"temperature": 0.4,
+				"max_output_tokens": 2048
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/arbitrage-complete-v2",
+				"authentication_required": false
+			}
+		}
+	}
+}

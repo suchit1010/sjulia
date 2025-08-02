@@ -1,3 +1,38 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 using Test
 import JuliaOS.JuliaOSFramework.Agents: createAgent, getAgentStatus, startAgent, pauseAgent, resumeAgent, stopAgent, setAgentMemory, getAgentMemory, clearAgentMemory, executeAgentTask, getTaskStatus, getTaskResult, cloneAgent, listAgents, getAgent, register_skill
 import JuliaOS.JuliaOSFramework.AgentCore: AgentConfig, TRADING, MONITOR, CREATED, RUNNING, PAUSED, STOPPED, TASK_COMPLETED,register_ability,ABILITY_REGISTRY

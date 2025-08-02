@@ -1,0 +1,3 @@
+"""
+Swarm coordination initialization
+"""

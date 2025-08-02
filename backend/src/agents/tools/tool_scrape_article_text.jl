@@ -3,6 +3,9 @@ using Gumbo, Cascadia, HTTP
 
 
 Base.@kwdef struct ToolScrapeArticleConfig <: ToolConfig
+    max_content_length::Int = 10000
+    timeout::Int = 30
+    user_agent::String = "JuliaOS-Agent/1.0"
 end
 
 function extract_article_text(html::String)::String

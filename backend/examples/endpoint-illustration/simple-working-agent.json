@@ -1,0 +1,29 @@
+{
+    "id": "simple-working-agent",
+    "name": "Simple Working Agent",
+    "description": "A minimal test agent with correct tool configuration",
+    "blueprint": {
+        "tools": [
+            {
+                "name": "ping",
+                "config": {}
+            }
+        ],
+        "strategy": {
+            "name": "plan_execute",
+            "config": {
+                "api_key": "test-key",
+                "model_name": "test-model",
+                "temperature": 0.4,
+                "max_output_tokens": 1024
+            }
+        },
+        "trigger": {
+            "type": "webhook",
+            "params": {
+                "endpoint": "/simple-working",
+                "authentication_required": false
+            }
+        }
+    }
+}

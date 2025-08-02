@@ -1,0 +1,7 @@
+{
+  "exchange": "binance_paper",
+  "api_key": "gAAAAABoh6FoAXXm6q9dsTGC0iEqrWtrjZ-FkfDir_DfcafDf3DTsaRVIdYGEmz4ZewktTWV7UuMKR-Co_dWFPNr2Fn1NTz1M13h4tw98m0LGkiZfOAcaec0reXdEI1g-9GDP_Fq9H9pEmrk1rkeK2Rzdg_2Q2tVIQhJNMGDN3hMiDiWL9-UTPI=",
+  "api_secret": "gAAAAABoh6Fojx2EwmHPaXyREcgus5Wd71W5j3vQXMiC4xiHqqVZDVjLS4hj-7dfJUut5IgBibkCO7nOVCAnzfSuUNZwPNpA-GkKw777s_G8W3CyqRW1Hs_JuVkeesMO6Oa29fDFDTTKTQoQffGguMRHxImBz0VNC5IFVYjeH0ahx-R7LImiuhzx-220CCT_WVW4_o0ojxV_q8dQxrKQJq0TF4BKsKjmQY-tMcKHEkMemcHT8nr7qBrUt-ZhhL-TtgnG127MNjNHJjwAg_5Hia29AyKtlx3c3_0FNkinP3K9ddTmuTURriQWT_8SCAh7xPR3TwNPda7JFKfeeSMGQ_TbHTZYApb1_f5B8JH_-kLlpUOaiLCoA9RJY4EougjleIAZ_sUzw2RF9BNPe1RqKcMFRSOCBTd9oYZko6oBduJ4EalkpwlQX1o=",
+  "base_url": "https://testnet.binance.vision/api",
+  "testnet": true
+}

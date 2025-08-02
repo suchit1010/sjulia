@@ -1,0 +1,17 @@
+{
+  "jupiter": {
+    "name": "Jupiter (Solana Devnet)",
+    "url": "https://quote-api.jup.ag/v6",
+    "network": "devnet"
+  },
+  "uniswap": {
+    "name": "Uniswap V3 (Sepolia)",
+    "url": "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3-sepolia",
+    "network": "sepolia"
+  },
+  "raydium": {
+    "name": "Raydium (Solana Devnet)",
+    "url": "https://api.raydium.io/v2",
+    "network": "devnet"
+  }
+}

@@ -3,6 +3,8 @@ using ..CommonTypes: ToolSpecification, ToolMetadata, ToolConfig
 
 
 Base.@kwdef struct ToolPingConfig <: ToolConfig
+    timeout::Int = 5000
+    max_retries::Int = 3
 end
 
 function tool_ping(cfg::ToolPingConfig, task::Dict)

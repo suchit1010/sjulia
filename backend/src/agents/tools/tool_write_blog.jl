@@ -6,7 +6,7 @@ using ..CommonTypes: ToolSpecification, ToolMetadata, ToolConfig
 
 
 GEMINI_API_KEY = ENV["GEMINI_API_KEY"]
-GEMINI_MODEL = "models/gemini-1.5-pro"
+GEMINI_MODEL = "models/gemini-2.5-pro"
 
 Base.@kwdef struct ToolBlogWriterConfig <: ToolConfig
     api_key::String = GEMINI_API_KEY

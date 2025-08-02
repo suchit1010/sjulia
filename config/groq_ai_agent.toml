@@ -1,0 +1,50 @@
+# JuliaOS Groq Agent Configuration
+# An intelligent AI agent powered by Groq's fast inference API
+
+[agent]
+id = "groq-ai-agent"
+name = "Groq AI Assistant"
+description = "A comprehensive AI agent powered by Groq's fast LLM inference for various tasks including chat, code generation, analysis, and creative writing"
+
+[agent.blueprint]
+# Tools configuration
+[[agent.blueprint.tools]]
+name = "groq_agent"
+[agent.blueprint.tools.config]
+api_key = "${GROQ_API_KEY}"  # Set this environment variable
+model_name = "llama-3.3-70b-versatile"  # Latest Llama model on Groq
+temperature = 0.7
+max_tokens = 2048
+top_p = 1.0
+frequency_penalty = 0.0
+presence_penalty = 0.0
+
+# Strategy configuration
+[agent.blueprint.strategy]
+name = "conversational_ai"  # Custom strategy for AI interactions
+[agent.blueprint.strategy.config]
+default_task_type = "chat"
+enable_context_memory = true
+max_context_length = 4000
+auto_task_detection = true
+
+# Trigger configuration
+[agent.blueprint.trigger]
+type = "webhook"  # Can be triggered via API calls
+[agent.blueprint.trigger.params]
+endpoint = "/groq-agent"
+authentication_required = false
+
+# Performance settings
+[performance]
+response_timeout = 30  # seconds
+max_concurrent_requests = 5
+enable_caching = true
+cache_ttl = 300  # 5 minutes
+
+# Logging settings
+[logging]
+level = "info"
+log_conversations = true
+log_performance_metrics = true
+max_log_entries = 1000

@@ -2,8 +2,9 @@
 module AgentCore
 
 using ..Config
-export Agent, AgentConfig, AgentStatus, AgentType,
-       AbstractAgentMemory, AbstractAgentQueue, AbstractLLMIntegration, AGENTS_LOCK, ABILITY_REGISTRY, register_ability, AGENTS
+export Agent, AgentConfig, AgentStatus, AgentType, TRADING, MONITOR, ARBITRAGE, DATA_COLLECTION, NOTIFICATION, CUSTOM, DEV,
+       AbstractAgentMemory, AbstractAgentQueue, AbstractLLMIntegration, AGENTS_LOCK, ABILITY_REGISTRY, register_ability, AGENTS,
+       OrderedDictAgentMemory, PriorityAgentQueue, Skill, SkillState, set_value!, get_value
 
 using UUIDs, Dates
 using DataStructures
@@ -38,6 +39,58 @@ end
     TASK_FAILED = 4
     TASK_CANCELLED = 5
     TASK_UNKNOWN = 99 # For loading potentially old/corrupt data
+end
+
+# ----------------------------------------------------------------------
+# AGENT CONFIG STRUCTURE
+# ----------------------------------------------------------------------
+"""
+    AgentConfig
+
+Configuration structure for creating agents.
+
+# Fields
+- `name::String`: Agent name
+- `type::AgentType`: Agent type
+- `abilities::Vector{String}`: List of abilities this agent has
+- `chains::Vector{String}`: List of blockchain chains this agent can work with
+- `parameters::Dict{String,Any}`: Agent-specific parameters
+- `llm_config::Dict{String,Any}`: LLM configuration
+- `memory_config::Dict{String,Any}`: Memory configuration
+- `queue_config::Dict{String,Any}`: Queue configuration
+- `max_task_history::Int`: Maximum number of tasks to keep in history
+"""
+struct AgentConfig
+    name::String
+    type::AgentType
+    abilities::Vector{String}
+    chains::Vector{String}
+    parameters::Dict{String,Any}
+    llm_config::Dict{String,Any}
+    memory_config::Dict{String,Any}
+    queue_config::Dict{String,Any}
+    max_task_history::Int
+
+    function AgentConfig(name::String, type::AgentType; 
+                        abilities::Vector{String}=String[],
+                        chains::Vector{String}=String[],
+                        parameters::Dict{String,Any}=Dict{String,Any}(),
+                        llm_config::Dict{String,Any}=Dict{String,Any}(),
+                        memory_config::Dict{String,Any}=Dict{String,Any}(),
+                        queue_config::Dict{String,Any}=Dict{String,Any}(),
+                        max_task_history::Int=MAX_TASK_HISTORY)
+        # Populate default configurations if empty
+        if isempty(llm_config)
+            llm_config = Dict("provider"=>"openai","model"=>"gpt-4o-mini","temperature"=>0.7,"max_tokens"=>1024)
+        end
+        if isempty(memory_config)
+            memory_config = Dict("type"=>"ordered_dict","max_size"=>1000,"retention_policy"=>"lru")
+        end
+        if isempty(queue_config)
+            queue_config = Dict("type"=>"priority_queue")
+        end
+        new(name, type, abilities, chains, parameters, llm_config, memory_config, queue_config, max_task_history)
+    end
 end
 
 # ----------------------------------------------------------------------
@@ -153,49 +206,8 @@ Base.length(q::PriorityAgentQueue) = length(q.queue)
 # LLMIntegration.chat(llm::DefaultLLMIntegration, prompt::String; cfg::Dict) = LLMIntegration.chat(prompt; cfg=cfg)
 
 # ----------------------------------------------------------------------
-# CONFIG STRUCT
+# TASK RESULT STRUCTURE
 # ----------------------------------------------------------------------
-"""
-    AgentConfig
-
-Configuration for creating a new agent.
-
-# Fields
-- `name::String`: Agent name
-- `type::AgentType`: Agent type (enum)
-- `abilities::Vector{String}`: List of ability names this agent type can perform
-- `chains::Vector{String}`: List of chain names this agent type can execute
-- `parameters::Dict{String,Any}`: Agent-specific parameters
-- `llm_config::Dict{String,Any}`: Configuration for the LLM provider (can specify implementation type)
-- `memory_config::Dict{String,Any}`: Configuration for agent memory (can specify implementation type)
-- `queue_config::Dict{String,Any}`: Configuration for agent queue (can specify implementation type) (NEW)
-- `max_task_history::Int`: Maximum number of tasks to keep in history
-"""
-struct AgentConfig
-    name::String
-    type::AgentType
-    abilities::Vector{String}
-    chains::Vector{String}
-    parameters::Dict{String,Any}
-    llm_config::Dict{String,Any}
-    memory_config::Dict{String,Any}
-    queue_config::Dict{String,Any} # NEW: Queue config
-    max_task_history::Int
-
-    function AgentConfig(name::String, type::AgentType;
-                         abilities::Vector{String}=String[], chains::Vector{String}=String[],
-                         parameters::Dict{String,Any}=Dict(),
-                         llm_config::Dict{String,Any}=Dict(),
-                         memory_config::Dict{String,Any}=Dict(),
-                         queue_config::Dict{String,Any}=Dict(), # NEW: Default queue config
-                         max_task_history::Int=MAX_TASK_HISTORY)
-        isempty(llm_config) && (llm_config = Dict("provider"=>"openai","model"=>"gpt-4o-mini","temperature"=>0.7,"max_tokens"=>1024))
-        isempty(memory_config) && (memory_config = Dict("type"=>"ordered_dict","max_size"=>1000,"retention_policy"=>"lru")) # Added default type
-        isempty(queue_config) && (queue_config = Dict("type"=>"priority_queue")) # NEW: Default queue type
-        new(name, type, abilities, chains, parameters, llm_config, memory_config, queue_config, max_task_history)
-    end
-end
-
 """
     TaskResult
 

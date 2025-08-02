@@ -1,0 +1,42 @@
+{
+	"id": "groq-arbitrage-step1",
+	"name": "Groq Arbitrage Agent Step 1",
+	"description": "Testing with groq_agent and price_fetcher tools",
+	"blueprint": {
+		"tools": [
+			{
+				"name": "groq_agent",
+				"config": {
+					"api_key": "YOUR_GROQ_API_KEY_HERE",
+					"model_name": "llama-3.3-70b-versatile",
+					"temperature": 0.3,
+					"max_tokens": 4096
+				}
+			},
+			{
+				"name": "price_fetcher",
+				"config": {
+					"timeout": 30,
+					"max_retries": 3,
+					"user_agent": "JuliaOS-ArbitrageBot/1.0"
+				}
+			}
+		],
+		"strategy": {
+			"name": "plan_execute",
+			"config": {
+				"api_key": "AIzaSyArNyMbSMis3LWzSXVORhpiWW3dJAgbiAg",
+				"model_name": "models/gemini-2.5-pro",
+				"temperature": 0.4,
+				"max_output_tokens": 2048
+			}
+		},
+		"trigger": {
+			"type": "webhook",
+			"params": {
+				"endpoint": "/arbitrage-step1",
+				"authentication_required": false
+			}
+		}
+	}
+}

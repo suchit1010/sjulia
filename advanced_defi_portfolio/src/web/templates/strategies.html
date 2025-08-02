@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trading Strategies - Enhanced DeFi Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .priority-high { border-left: 4px solid #10b981; }
+        .priority-medium { border-left: 4px solid #f59e0b; }
+        .priority-low { border-left: 4px solid #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold">🤖 AI Trading Strategies</h1>
+                    </div>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/" class="hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Dashboard</a>
+                        <a href="/portfolio" class="hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Portfolio</a>
+                        <a href="/strategies" class="bg-white bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium">Strategies</a>
+                        <a href="/agents" class="hover:bg-white hover:bg-opacity-20 px-3 py-2 rounded-md text-sm font-medium transition duration-150">Agents</a>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Portfolio Overview -->
+        <div class="mb-8">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-wallet text-3xl text-indigo-600"></i>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">Current Portfolio Value</dt>
+                                <dd class="text-3xl font-semibold text-gray-900">${{ "%.2f"|format(portfolio_value) }}</dd>
+                            </dl>
+                        </div>
+                        <div class="flex-shrink-0">
+                            {% if real_data %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i> Real Data
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Demo Mode
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Introduction -->
+        <div class="mb-8">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-blue-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium text-blue-900">AI-Generated Strategies for Maximum PnL</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <p>Our AI has analyzed your current Solana wallet holdings and market conditions to generate personalized strategies for maximizing your profit and loss (PnL). Each strategy is ranked by priority based on risk-adjusted returns.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategies Grid -->
+        <div class="space-y-6">
+            {% for strategy in strategies %}
+            <div class="bg-white shadow rounded-lg card-hover priority-{{ strategy.priority.lower() }}">
+                <div class="p-6">
+                    <!-- Strategy Header -->
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center">
+                                <h3 class="text-lg font-semibold text-gray-900">{{ strategy.title }}</h3>
+                                <span class="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    {% if strategy.priority == 'High' %}bg-green-100 text-green-800{% 
+                                    elif strategy.priority == 'Medium' %}bg-yellow-100 text-yellow-800{% 
+                                    else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ strategy.priority }} Priority
+                                </span>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-600">{{ strategy.type }} • {{ strategy.protocol }}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold text-green-600">{{ "%.1f"|format(strategy.expected_apy) }}%</div>
+                            <div class="text-sm text-gray-500">Expected APY</div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Description -->
+                    <div class="mt-4">
+                        <p class="text-gray-700">{{ strategy.description }}</p>
+                    </div>
+
+                    <!-- Strategy Details -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-gray-500">Investment Amount</div>
+                            <div class="text-xl font-semibold text-gray-900">${{ "%.2f"|format(strategy.investment_amount) }}</div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-gray-500">Risk Level</div>
+                            <div class="text-xl font-semibold 
+                                {% if strategy.risk_level == 'Low' %}text-green-600{% 
+                                elif strategy.risk_level == 'Medium' %}text-yellow-600{% 
+                                else %}text-red-600{% endif %}">
+                                {{ strategy.risk_level }}
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="text-sm font-medium text-gray-500">Timeframe</div>
+                            <div class="text-xl font-semibold text-gray-900">{{ strategy.timeframe }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Action Steps -->
+                    <div class="mt-6">
+                        <div class="bg-indigo-50 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <i class="fas fa-play-circle text-indigo-600 text-lg mr-2"></i>
+                                <span class="font-medium text-indigo-900">Action Required:</span>
+                                <span class="ml-2 text-indigo-700">{{ strategy.action }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pros and Cons -->
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                <i class="fas fa-thumbs-up text-green-500 mr-1"></i> Pros
+                            </h4>
+                            <ul class="space-y-1">
+                                {% for pro in strategy.pros %}
+                                <li class="text-sm text-gray-600 flex items-start">
+                                    <i class="fas fa-check text-green-500 mr-2 mt-0.5 text-xs"></i>
+                                    {{ pro }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i> Cons
+                            </h4>
+                            <ul class="space-y-1">
+                                {% for con in strategy.cons %}
+                                <li class="text-sm text-gray-600 flex items-start">
+                                    <i class="fas fa-times text-red-500 mr-2 mt-0.5 text-xs"></i>
+                                    {{ con }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="mt-6 flex justify-end">
+                        <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white 
+                            {% if strategy.priority == 'High' %}bg-green-600 hover:bg-green-700{% 
+                            elif strategy.priority == 'Medium' %}bg-yellow-600 hover:bg-yellow-700{% 
+                            else %}bg-gray-600 hover:bg-gray-700{% endif %} 
+                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Implement Strategy
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Additional Info -->
+        <div class="mt-12">
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">📊 Strategy Implementation Notes</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">Risk Management</h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Never invest more than you can afford to lose</li>
+                            <li>• Diversify across multiple strategies</li>
+                            <li>• Monitor positions regularly</li>
+                            <li>• Set stop-losses where appropriate</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-900 mb-2">AI Monitoring</h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Strategies update every 15 minutes</li>
+                            <li>• Market conditions are continuously analyzed</li>
+                            <li>• Risk scores adjust automatically</li>
+                            <li>• New opportunities are identified daily</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="text-center text-sm text-gray-500">
+                <p>Enhanced DeFi Portfolio Manager • AI-Powered Trading Strategies • Real-Time Market Analysis</p>
+                <p class="mt-1">Last updated: <span id="lastUpdated">{{ moment().format('YYYY-MM-DD HH:mm:ss') }}</span></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Update timestamp
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

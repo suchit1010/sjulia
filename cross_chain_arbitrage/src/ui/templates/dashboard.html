@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross-Chain Arbitrage Dashboard | JuliaOS</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <style>
+        .price-card {
+            transition: all 0.3s ease;
+        }
+        .price-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .profit-positive { color: #28a745; }
+        .profit-negative { color: #dc3545; }
+        .profit-neutral { color: #6c757d; }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .status-running { background-color: #28a745; }
+        .status-stopped { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        .log-container {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .chain-badge-solana { background-color: #9945ff; }
+        .chain-badge-ethereum { background-color: #627eea; }
+        .trade-history-item {
+            border-left: 4px solid #007bff;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+        .navbar-brand img {
+            height: 30px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <strong>JuliaOS</strong> Cross-Chain Arbitrage
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <span id="swarm-status" class="status-indicator status-stopped"></span>
+                    <span id="swarm-status-text">Stopped</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Control Panel -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">🎮 Swarm Control Panel</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <p class="mb-2">Control the Cross-Chain Arbitrage Swarm</p>
+                                <div class="d-flex gap-2">
+                                    <button id="start-btn" class="btn btn-success">▶️ Start Swarm</button>
+                                    <button id="stop-btn" class="btn btn-danger" disabled>⏹️ Stop Swarm</button>
+                                    <button id="refresh-btn" class="btn btn-outline-primary">🔄 Refresh</button>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="badge bg-info fs-6">
+                                    <span id="demo-mode">🎭 Demo Mode</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Data Row -->
+        <div class="row mb-4">
+            <!-- Solana Price -->
+            <div class="col-md-4">
+                <div class="card price-card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="card-title mb-0">
+                            <span class="badge chain-badge-solana me-2">SOL</span>
+                            Solana / Raydium
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="text-primary mb-1">$<span id="sol-price">--</span></h3>
+                        <p class="text-muted mb-2">SOL/USDC</p>
+                        <small class="text-muted">
+                            Last update: <span id="sol-update">--</span><br>
+                            Age: <span id="sol-age">--</span>s
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ethereum Price -->
+            <div class="col-md-4">
+                <div class="card price-card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="card-title mb-0">
+                            <span class="badge chain-badge-ethereum me-2">ETH</span>
+                            Ethereum / Uniswap
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="text-info mb-1">$<span id="eth-price">--</span></h3>
+                        <p class="text-muted mb-2">wSOL/USDC</p>
+                        <small class="text-muted">
+                            Last update: <span id="eth-update">--</span><br>
+                            Gas: <span id="eth-gas">--</span> gwei
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arbitrage Opportunity -->
+            <div class="col-md-4">
+                <div class="card price-card h-100">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="card-title mb-0">
+                            ⚡ Arbitrage Opportunity
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="mb-1"><span id="spread-percentage" class="profit-neutral">--%</span></h3>
+                        <p class="text-muted mb-2">Price Spread</p>
+                        <small class="text-muted">
+                            Direction: <span id="spread-direction">--</span><br>
+                            Absolute: $<span id="spread-absolute">--</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="row mb-4">
+            <!-- Performance Metrics -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">📊 Performance Metrics</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h4 class="text-primary mb-1"><span id="total-evaluations">0</span></h4>
+                                <small class="text-muted">Evaluations</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-success mb-1"><span id="profitable-opportunities">0</span></h4>
+                                <small class="text-muted">Opportunities</small>
+                            </div>
+                            <div class="col-4">
+                                <h4 class="text-warning mb-1"><span id="executed-trades">0</span></h4>
+                                <small class="text-muted">Executed</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h5 class="profit-positive mb-1">$<span id="total-profit">0.00</span></h5>
+                                <small class="text-muted">Total Profit</small>
+                            </div>
+                            <div class="col-6">
+                                <h5 class="text-info mb-1"><span id="uptime">0h 0m</span></h5>
+                                <small class="text-muted">Uptime</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swarm Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">🐝 Swarm Status</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-2">
+                                    <strong>Agents Status:</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Solana Agent:</span>
+                                    <span id="agent-solana" class="badge bg-secondary">Unknown</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Ethereum Agent:</span>
+                                    <span id="agent-ethereum" class="badge bg-secondary">Unknown</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span>Executor Agent:</span>
+                                    <span id="agent-executor" class="badge bg-secondary">Unknown</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="success-rate-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%">
+                                        <span id="success-rate">0%</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trade History and Logs Row -->
+        <div class="row mb-4">
+            <!-- Recent Trades -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">💰 Recent Trades</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="trade-history" class="log-container">
+                            <div class="text-muted text-center">No trades yet...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">📋 Activity Log</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="activity-log" class="log-container">
+                            <div class="text-muted text-center">Starting up...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">📈 Price Comparison Chart</h6>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="price-chart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dashboard JavaScript -->
+    <script>
+        class ArbitrageDashboard {
+            constructor() {
+                this.isRunning = false;
+                this.refreshInterval = null;
+                this.priceChart = null;
+                this.priceData = {
+                    labels: [],
+                    solana: [],
+                    ethereum: []
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.initChart();
+                this.refreshData();
+                this.log('Dashboard initialized');
+            }
+            
+            setupEventListeners() {
+                document.getElementById('start-btn').addEventListener('click', () => this.startSwarm());
+                document.getElementById('stop-btn').addEventListener('click', () => this.stopSwarm());
+                document.getElementById('refresh-btn').addEventListener('click', () => this.refreshData());
+            }
+            
+            initChart() {
+                const ctx = document.getElementById('price-chart').getContext('2d');
+                this.priceChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: this.priceData.labels,
+                        datasets: [{
+                            label: 'Solana (SOL/USDC)',
+                            data: this.priceData.solana,
+                            borderColor: '#9945ff',
+                            backgroundColor: 'rgba(153, 69, 255, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Ethereum (wSOL/USDC)',
+                            data: this.priceData.ethereum,
+                            borderColor: '#627eea',
+                            backgroundColor: 'rgba(98, 126, 234, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                title: {
+                                    display: true,
+                                    text: 'Price (USD)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            async startSwarm() {
+                try {
+                    this.log('Starting swarm...');
+                    const response = await fetch('/api/start', { method: 'POST' });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.isRunning = true;
+                        this.updateControls();
+                        this.startAutoRefresh();
+                        this.log('✅ Swarm started successfully');
+                    } else {
+                        this.log(`❌ Failed to start swarm: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.log(`❌ Error starting swarm: ${error.message}`);
+                }
+            }
+            
+            async stopSwarm() {
+                try {
+                    this.log('Stopping swarm...');
+                    const response = await fetch('/api/stop', { method: 'POST' });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.isRunning = false;
+                        this.updateControls();
+                        this.stopAutoRefresh();
+                        this.log('🛑 Swarm stopped successfully');
+                    } else {
+                        this.log(`❌ Failed to stop swarm: ${data.error}`);
+                    }
+                } catch (error) {
+                    this.log(`❌ Error stopping swarm: ${error.message}`);
+                }
+            }
+            
+            updateControls() {
+                const startBtn = document.getElementById('start-btn');
+                const stopBtn = document.getElementById('stop-btn');
+                const statusIndicator = document.getElementById('swarm-status');
+                const statusText = document.getElementById('swarm-status-text');
+                
+                if (this.isRunning) {
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    statusIndicator.className = 'status-indicator status-running';
+                    statusText.textContent = 'Running';
+                } else {
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    statusIndicator.className = 'status-indicator status-stopped';
+                    statusText.textContent = 'Stopped';
+                }
+            }
+            
+            startAutoRefresh() {
+                if (this.refreshInterval) clearInterval(this.refreshInterval);
+                this.refreshInterval = setInterval(() => this.refreshData(), 5000); // 5 seconds
+            }
+            
+            stopAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                    this.refreshInterval = null;
+                }
+            }
+            
+            async refreshData() {
+                try {
+                    await Promise.all([
+                        this.updateStatus(),
+                        this.updatePrices(),
+                        this.updateMetrics(),
+                        this.updateHistory()
+                    ]);
+                } catch (error) {
+                    this.log(`❌ Error refreshing data: ${error.message}`);
+                }
+            }
+            
+            async updateStatus() {
+                try {
+                    const response = await fetch('/api/status');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        const status = data.data;
+                        this.isRunning = status.is_running;
+                        this.updateControls();
+                        
+                        // Update agent status
+                        this.updateAgentStatus('agent-solana', status.agents.solana);
+                        this.updateAgentStatus('agent-ethereum', status.agents.ethereum);
+                        this.updateAgentStatus('agent-executor', status.agents.executor);
+                    }
+                } catch (error) {
+                    // Silently handle errors in auto-refresh
+                }
+            }
+            
+            updateAgentStatus(elementId, isActive) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = isActive ? 'Active' : 'Inactive';
+                    element.className = `badge ${isActive ? 'bg-success' : 'bg-secondary'}`;
+                }
+            }
+            
+            async updatePrices() {
+                try {
+                    const response = await fetch('/api/prices');
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        const prices = data.data;
+                        
+                        // Update Solana price
+                        if (prices.solana) {
+                            this.updateElement('sol-price', prices.solana.price?.toFixed(4) || '--');
+                            this.updateElement('sol-update', this.formatTimestamp(prices.solana.last_update));
+                            this.updateElement('sol-age', Math.round(prices.solana.age_seconds || 0));
+                        }
+                        
+                        // Update Ethereum price
+                        if (prices.ethereum) {
+                            this.updateElement('eth-price', prices.ethereum.price?.toFixed(4) || '--');
+                            this.updateElement('eth-update', this.formatTimestamp(prices.ethereum.last_update));
+                            this.updateElement('eth-gas', prices.ethereum.gas_info?.gas_price_gwei?.toFixed(1) || '--');
+                        }
+                        
+                        // Update spread
+                        if (prices.spread) {
+                            const spreadEl = document.getElementById('spread-percentage');
+                            const spreadPct = (prices.spread.percentage * 100).toFixed(2);
+                            spreadEl.textContent = `${spreadPct}%`;
+                            spreadEl.className = this.getProfitClass(prices.spread.percentage);
+                            
+                            this.updateElement('spread-direction', prices.spread.direction);
+                            this.updateElement('spread-absolute', prices.spread.absolute.toFixed(4));
+                        }
+                        
+                        // Update chart
+                        this.updateChart(prices);
+                    }
+                } catch (error) {
+                    // Silently handle errors in auto-refresh
+                }
+            }
+            
+            async updateMetrics() {
+                try {
+                    const response = await fetch('/api/metrics');
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        const metrics = data.data;
+                        
+                        this.updateElement('total-evaluations', metrics.total_evaluations || 0);
+                        this.updateElement('profitable-opportunities', metrics.profitable_opportunities || 0);
+                        this.updateElement('executed-trades', metrics.executed_trades || 0);
+                        this.updateElement('total-profit', (metrics.total_profit || 0).toFixed(2));
+                        this.updateElement('uptime', this.formatUptime(metrics.uptime_hours || 0));
+                        
+                        // Update success rate
+                        const successRate = metrics.execution_rate || 0;
+                        const successRateBar = document.getElementById('success-rate-bar');
+                        const successRateText = document.getElementById('success-rate');
+                        
+                        successRateBar.style.width = `${successRate * 100}%`;
+                        successRateText.textContent = `${(successRate * 100).toFixed(0)}%`;
+                    }
+                } catch (error) {
+                    // Silently handle errors in auto-refresh
+                }
+            }
+            
+            async updateHistory() {
+                try {
+                    const response = await fetch('/api/history');
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        this.updateTradeHistory(data.data.executions || []);
+                    }
+                } catch (error) {
+                    // Silently handle errors in auto-refresh
+                }
+            }
+            
+            updateTradeHistory(trades) {
+                const container = document.getElementById('trade-history');
+                
+                if (trades.length === 0) {
+                    container.innerHTML = '<div class="text-muted text-center">No trades yet...</div>';
+                    return;
+                }
+                
+                const html = trades.slice(-10).reverse().map(trade => {
+                    const timestamp = this.formatTimestamp(trade.timestamp);
+                    const profit = trade.net_profit || 0;
+                    const profitClass = this.getProfitClass(profit);
+                    
+                    return `
+                        <div class="trade-history-item">
+                            <div class="d-flex justify-content-between">
+                                <span><strong>${trade.direction || 'Unknown'}</strong></span>
+                                <span class="${profitClass}">$${profit.toFixed(2)}</span>
+                            </div>
+                            <small class="text-muted">${timestamp} | $${(trade.amount || 0).toFixed(2)}</small>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = html;
+            }
+            
+            updateChart(prices) {
+                if (!this.priceChart) return;
+                
+                const now = new Date().toLocaleTimeString();
+                
+                // Add new data point
+                this.priceData.labels.push(now);
+                this.priceData.solana.push(prices.solana?.price || null);
+                this.priceData.ethereum.push(prices.ethereum?.price || null);
+                
+                // Keep only last 20 points
+                if (this.priceData.labels.length > 20) {
+                    this.priceData.labels.shift();
+                    this.priceData.solana.shift();
+                    this.priceData.ethereum.shift();
+                }
+                
+                this.priceChart.update('none');
+            }
+            
+            updateElement(id, value) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            }
+            
+            getProfitClass(value) {
+                if (value > 0.01) return 'profit-positive';
+                if (value < -0.01) return 'profit-negative';
+                return 'profit-neutral';
+            }
+            
+            formatTimestamp(timestamp) {
+                if (!timestamp) return '--';
+                return new Date(timestamp * 1000).toLocaleTimeString();
+            }
+            
+            formatUptime(hours) {
+                const h = Math.floor(hours);
+                const m = Math.floor((hours - h) * 60);
+                return `${h}h ${m}m`;
+            }
+            
+            log(message) {
+                const logContainer = document.getElementById('activity-log');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.innerHTML = `<small class="text-muted">[${timestamp}]</small> ${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only last 50 log entries
+                while (logContainer.children.length > 50) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ArbitrageDashboard();
+        });
+    </script>
+</body>
+</html>
